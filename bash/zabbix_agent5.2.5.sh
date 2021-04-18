@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 clear
 tput setaf 7; read -p "Entrez le nom du serveur : " server_name
