@@ -30,7 +30,7 @@ function Change-Source {
 }
 
 
-# Mise à jours des paquets
+# Updating packages
 function Install-Essentials-Packages {
   apt update && apt upgrade -y
   apt install -y sudo 
@@ -42,7 +42,7 @@ function Install-Essentials-Packages {
   apt install -y git
 }
 
-# Installation des dépendances et de docker
+# Dependancies & Docker
 function Install-Docker {
   tput setaf 2; apt-get install -y ca-certificates gnupg lsb-release
   curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
@@ -59,7 +59,7 @@ function Install-Docker {
 function Update-db {
   updatedb
 }
-#Installation & Configuration of Traefik & Portainer
+#Portainer & Traefik installation
 function Install-TraefikPortainer {
   traefik_compose_path="/apps/traefik/docker-compose.yml"
   traefik_static_config_path="/apps/traefik/traefik.yml"
@@ -163,8 +163,8 @@ if [ $install_docker = "y" ]
     while [ -z $redirection ] || [ $redirection != 'y' ]
     do
       tput setaf 3; echo "WARNING : please make the following redirections :"
-      tput setaf 3; echo "=> Traefik : traefik.$ndd => Public IP of your server !"
-      tput setaf 3; echo "=> Portainer : portainer.$ndd => Public IP of your server !"
+      tput setaf 3; echo "=> Traefik : traefik.$ndd => Public IP of your server ! (DNS Type A : traefik.$ndd --> your server IP address"
+      tput setaf 3; echo "=> Portainer : portainer.$ndd => Public IP of your server ! (DNS Type A : portainer.$ndd --> your server IP address"
       echo ""
       tput setaf 3; read -p "Have the redirects been configured correctly? (y/n) " redirection
     done
