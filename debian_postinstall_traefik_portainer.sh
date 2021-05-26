@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Automatic debian configuration for traefik/portainer by Khroners 
-
+curent_path=$(pwd)
 function System-Verification {
   if [[ $(arch) != *"64" ]]
     then
@@ -83,6 +83,7 @@ function Install-TraefikPortainer {
   fi
   sed -i "s/exemple.com/$ndd/" $traefik_compose_path
   tput setaf 2; docker network create proxy
+  cd /apps/traefik
   docker-compose up -d
 }
 
@@ -266,7 +267,7 @@ if [ $install_traefik = "y" ]
   docker_version=$(docker -v)
   docker_compose_version=$(docker-compose -v)
   tput bold; tput setaf 7; echo "                               $docker_version                                            "
-  tput bold; tput setaf 7; echo "                               $docker_version                                           "
+  tput bold; tput setaf 7; echo "                               $docker_compose_version                                           "
   tput setaf 7; echo ""
 fi
 tput bold; tput setaf 7; echo "                                Please reconnect                                "
@@ -280,6 +281,7 @@ tput bold; tput setaf 6; echo "                               Docs.khroners.fr /
 tput setaf 7; echo "----------------------------------------------------------------------------------------------------"
 tput setaf 2; echo ""
 
+cd $pwd
 sleep 3
 # Reboot of SSH service
 service ssh restart
