@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Automatic debian configuration for traefik/portainer by Khroners 
-curent_path=$(pwd)
+current_path=$(pwd)
 function System-Verification {
   if [[ $(arch) != *"64" ]]
     then
@@ -281,7 +281,7 @@ tput bold; tput setaf 6; echo "                               Docs.khroners.fr /
 tput setaf 7; echo "----------------------------------------------------------------------------------------------------"
 tput setaf 2; echo ""
 
-cd $pwd
+cd $current_path
 sleep 3
 # Reboot of SSH service
 service ssh restart
