@@ -50,6 +50,9 @@ function Install-Docker {
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
   apt update
   apt install -y docker-ce docker-ce-cli containerd.io
+  curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  chmod +x /usr/local/bin/docker-compose
+  ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 }
 
 
@@ -249,11 +252,21 @@ echo ""
 tput setaf 7; echo "----------------------------------------------------------------------------------------------------"
 tput bold; tput setaf 7; echo "                               => Preparation completed <=                                "
 tput setaf 7; echo ""
-if [ $install_traefik = "y" ]
+version_docker=docker
+if [ $install_docker = "y" ]
   then
   tput bold; tput setaf 7; echo "                               Portainer.$ndd                                            "
   tput bold; tput setaf 7; echo "                               Traefik.$ndd                                            "
   tput bold; tput setaf 7; echo "                          Traefik login : admin / admin                          "
+  tput setaf 7; echo ""
+fi
+tput setaf 7; echo ""
+if [ $install_traefik = "y" ]
+  then
+  docker_version=$(docker -v)
+  docker_compose_version=$(docker-compose -v)
+  tput bold; tput setaf 7; echo "                               $docker_version                                            "
+  tput bold; tput setaf 7; echo "                               $docker_version                                           "
   tput setaf 7; echo ""
 fi
 tput bold; tput setaf 7; echo "                                Please reconnect                                "
