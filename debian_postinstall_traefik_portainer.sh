@@ -150,7 +150,11 @@ if [ $install_docker = "y" ]
   if [ $install_traefik = "y" ]
     then
     tput setaf 6; read -p "===>     Enter the name of your domain (ex : exemple.fr) : " ndd
-    tput setaf 6; read -p "===>     Enter your mail address for Let's Encrypt : " email
+    tput setaf 6; read -p "===>     Do you already have a wildcard certificate ? (y/n) : " cert
+    if [ $cert = "n" ]
+      then
+      tput setaf 6; read -p "===>     Enter your mail address for Let's Encrypt : " email
+    fi
     echo ""
     while [ -z $redirection ] || [ $redirection != 'y' ]
     do
@@ -163,6 +167,8 @@ if [ $install_docker = "y" ]
   fi
 fi
 echo ""
+
+
 tput setaf 7; echo "----------------------------------------------------------------------------------------------------"
 tput setaf 7; echo "                                           Begin of the script                                          "
 tput setaf 7; echo "----------------------------------------------------------------------------------------------------"
