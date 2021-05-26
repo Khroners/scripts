@@ -197,9 +197,9 @@ tput setaf 7; echo "Essentials packages installation............................
 echo ""
 
 
-tput setaf 6; echo "Uptading database.......................................................... In progress"
+tput setaf 6; echo "Updating database.......................................................... In progress"
 Update-db
-tput setaf 7; echo "Uptading database.......................................................... OK"
+tput setaf 7; echo "Updating database.......................................................... OK"
 
 echo ""
 echo ""
