@@ -78,8 +78,8 @@ function Install-TraefikPortainer {
     sed -i '36s/^.//' $traefik_compose_path
     sed -i '60s/^.//' $traefik_compose_path
     sed -i '23s/^/#/' $traefik_compose_path
-    sed -i '15,22s/^.//' $traefik_static_config_path
-    sed -i '23,32s/^/#/' $traefik_static_config_path
+    sed -i '16,22s/^.//' $traefik_static_config_path
+    sed -i '23,32s/^/#/' $traefik_dynamic_config_path
   fi
   sed -i "s/exemple.com/$ndd/" $traefik_compose_path
   tput setaf 2; docker network create proxy
