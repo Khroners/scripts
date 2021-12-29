@@ -18,7 +18,6 @@ General Options:
     -h, --help            Display this help message
     -o, --output          Change the download directory, Default is current directory
     --archlinux           Download Archlinux,           will not download others unless selected
-    --centos              Download CentOS,              will not download others unless selected
     --debian              Download Debian,              will not download others unless selected
     --fedora              Download Fedora,              will not download others unless selected
     --kali                Download Kali,                will not download others unless selected
@@ -34,15 +33,20 @@ Example:
 ```
 
 # Supported File Types
-- Iso
+- Iso (Checksum checker of some need to be done, like Rocky/Proxmox)
 - Torrent
 
 # Supported Distros
 - Archlinux
-- Centos
 - Debian
 - Fedora
 - Kali
+- OpenSUSE
 - Proxmox
 - RockyLinux
 - Ubuntu
+
+TO DO : 
+- Check checksum of Rocky/Proxmox/Kali
+- Add more distros
+- Only download .torrent if possible (Proxmox for example)
