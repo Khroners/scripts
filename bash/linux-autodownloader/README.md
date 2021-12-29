@@ -1,5 +1,5 @@
 # linux-autodownloader
-Based on https://gitlab.com/Luigi311/linux_downloader/
+Based on https://gitlab.com/Luigi311/linux_downloader/  
 Automatically download the latest version of some of the most common linux 
 distributions. It will automatically download either the iso or the torrent file
 for some distributions.
