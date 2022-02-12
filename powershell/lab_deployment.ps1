@@ -62,7 +62,6 @@ Workflow New-ServerSetup # Workflow a remplacer par DSC
                 New-ADOrganizationalUnit -Name $Serv -Description "$S $Serv" -Path "OU=Users,OU=$S,OU=$FirstOU,DC=$Dom,DC=$EXT"
             }
         }
-
     }
 
     Unregister-ScheduledJob -Name NewServerSetupResume
