@@ -28,15 +28,15 @@ Workflow New-ServerSetup # Workflow a remplacer par DSC
 
     Install-WindowsFeature -name AD-Domain-Services -IncludeManagementTools
     
-    Inline-Script
+    InlineScript
     {
         & "$env:USERPROFILE\Downloads\InstallForest.ps1 -DomainName $DomainName -DefaultSite $DefaultSite -SecurePwd $SecurePwd -ServerName $ServerName"
     }
-    Inline-Script
+    InlineScript
     {
         & "$env:USERPROFILE\Downloads\PostConfig.ps1 -DefaultSite $DefaultSite -Network $Network -ServerName $ServerName -Domaine $DomainName"
     }
-    Inline-Script
+    InlineScript
     {
         & "$env:USERPROFILE\Downloads\OUStructure.ps1 -Dom $Dom -EXT $EXT"
     } 
