@@ -27,6 +27,7 @@ Workflow New-ServerSetup # Workflow a remplacer par DSC
     Restart-Computer -Wait
 
     Install-WindowsFeature -name AD-Domain-Services -IncludeManagementTools
+    Import-Module ADDSDeployment
     Install-ADDSForest -DomainName $Domaine -SafeModeAdministratorPassword $SecurePassword -InstallDns -DomainMode WinThreshold -ForestMode WinThreshold -Force
     Add-DnsServerPrimaryZone -DynamicUpdate Secure -NetworkId $Reseau -ReplicationScope Domain
 
