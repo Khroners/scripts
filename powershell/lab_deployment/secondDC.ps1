@@ -1,3 +1,16 @@
+param(
+    [Parameter (Mandatory = $true)]
+    [string]$IPAddr,
+    [string]$Mask,
+    [string]$Gtw,
+    [string]$DNSServer,
+    [string]$DNSSuffix,
+    [string]$ServerName,
+    [string]$Domain,
+    [string]$SourceDC,
+    [string]$Site
+)
+
 $InterfaceIndex = $(Get-NetIPAddress | Where-Object {$_.InterfaceAlias -like "Ethernet*" -and $_.AddressFamily -like "IPv4"}).InterfaceIndex
 $InterfaceAlias = $(Get-NetIPAddress | Where-Object {$_.InterfaceIndex -like $InterfaceIndex}).InterfaceAlias
 
@@ -20,12 +33,12 @@ Install-ADDSDomainController `
 -NoGlobalCatalog:$false `
 -CreateDnsDelegation:$false `
 -Credential (Get-Credential) `
--CriticalReplicationOnly:$false ``
--DomainName "ad.khroners.fr" `
+-CriticalReplicationOnly:$false `
+-DomainName $Domain `
 -InstallDns:$true `
--NoRebootOnCompletion:$true `
--ReplicationSourceDC "RN-SRV-DC01.ad.khroners.fr" `
--SiteName "RENNES" `
+-NoRebootOnCompletion:$false `
+-ReplicationSourceDC $SourceDC `
+-SiteName $Site `
 -Force:$true
 
 # Login after the reboot and run the post DC Promo script
