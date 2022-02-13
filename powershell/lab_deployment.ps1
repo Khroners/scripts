@@ -17,56 +17,30 @@ Workflow New-ServerSetup # Workflow a remplacer par DSC
     $InterfaceIndex = $(Get-NetIPAddress | Where-Object {$_.InterfaceAlias -like "Ethernet*"}).InterfaceIndex
     $InterfaceAlias = $(Get-NetIPAddress | Where-Object {$_.InterfaceIndex -like $InterfaceIndex}).InterfaceAlias
 
-    New-NetIPAddress -InterfaceIndex $InterfaceIndex -AddressFamily IPv4 -IPAddress $IP -PrefixLength $Masque -DefaultGateway $Gateway
-    Set-DnsClientServerAddress -InterfaceIndex $InterfaceIndex -ServerAddresses $DNS
-    Set-DnsClient -InterfaceIndex $InterfaceIndex -ConnectionSpecificSuffix $SuffixeDNS
+    New-NetIPAddress -InterfaceIndex $InterfaceIndex -AddressFamily IPv4 -IPAddress $IPAddr -PrefixLength $Mask -DefaultGateway $Gtw
+    Set-DnsClientServerAddress -InterfaceIndex $InterfaceIndex -ServerAddresses $DNSServer
+    Set-DnsClient -InterfaceIndex $InterfaceIndex -ConnectionSpecificSuffix $DNSSuffix
     # Desactiver ipv6
     Disable-NetAdapterBinding -InterfaceAlias $InterfaceAlias -ComponentID ms_tcpip6
 
-    Rename-Computer -NewName $NomServeur -Force -Passthru
+    Rename-Computer -NewName $ServerName -Force -Passthru
     Restart-Computer -Wait
 
     Install-WindowsFeature -name AD-Domain-Services -IncludeManagementTools
-    Import-Module ADDSDeployment
-    Install-ADDSForest -DomainName $Domaine -SafeModeAdministratorPassword $SecurePassword -InstallDns -DomainMode WinThreshold -ForestMode WinThreshold -Force
-    Add-DnsServerPrimaryZone -DynamicUpdate Secure -NetworkId $Reseau -ReplicationScope Domain
-
-    New-ADReplicationSite -Name $SiteDefault -Description $SiteDefault
-    New-ADReplicationSubnet -Name $Reseau -Site $SiteDefault
-    # New-ADReplicationSiteLink -Name 'SL-Site1-Site2' -SitesIncluded Site1,Site2 -Cost 100 -ReplicationFrequencyInMinutes 15 -InterSiteTransportProtocol IP
-    Move-ADDirectoryServer -Identity $NomServeur -Site $SiteDefault
-    Remove-ADReplicationSite -Identity "Default-First-Site-Name" -confirm:$false
-
-    $domain = $Domaine.split(".")
-    $Dom = $domain[0]
-    $Ext = $domain[1]
-
-    # Activer la corbeille AD
-    Enable-ADOptionalFeature -Identity 'Recycle Bin Feature' -Scope ForestOrConfigurationSet -Target $Domaine
-
-    $Sites = ("RENNES","VANNES","BREST","SAINT-BRIEUC")
-    $Bases = ("Groups","Users","Workstations","Servers","Printers")
-    $Services = ("Production","Marketing","IT","Direction","Helpdesk")
-    $FirstOU = "Sites"
-
-    New-ADOrganizationalUnit -Name $FirstOU -Description $FirstOU -Path "DC=$Dom,DC=$EXT"
-
-
-    foreach ($S in $Sites)
+    
+    Inline-Script
     {
-            New-ADOrganizationalUnit -Name $S -Description "$S" -Path "OU=$FirstOU,DC=$Dom,DC=$EXT"
-
-        foreach ($Base in $Bases)
-        {
-            New-ADOrganizationalUnit -Name $Base -Description "$Base" -Path "OU=$S,OU=$FirstOU,DC=$Dom,DC=$EXT"
-
-            foreach ($Serv in $Services)
-            {
-                New-ADOrganizationalUnit -Name $Serv -Description "$S $Serv" -Path "OU=Users,OU=$S,OU=$FirstOU,DC=$Dom,DC=$EXT"
-            }
-        }
+        & "$env:USERPROFILE\Downloads\InstallForest.ps1 -DomainName $DomainName -DefaultSite $DefaultSite -SecurePwd $SecurePwd -ServerName $ServerName"
     }
-
+    Inline-Script
+    {
+        & "$env:USERPROFILE\Downloads\PostConfig.ps1 -DefaultSite $DefaultSite -Network $Network -ServerName $ServerName -Domaine $DomainName"
+    }
+    Inline-Script
+    {
+        & "$env:USERPROFILE\Downloads\OUStructure.ps1 -Dom $Dom -EXT $EXT"
+    } 
+    
     Unregister-ScheduledJob -Name NewServerSetupResume
 }
 
@@ -89,8 +63,79 @@ $SiteDefault = Read-Host("Entrez le site AD par defaut")
 $SecurePassword = Read-Host("Entrez le mot de passe DSRM") | ConvertTo-SecureString -AsPlainText -Force
 $NomServeur = Read-Host("Entrez le nom du serveur")
 
+$InstallForestPS1 = @"
+param(
+    [Parameter (Mandatory = $true)]
+    [string]$DomainName,
+    [string]$DefaultSite,
+    [string]$SecurePwd,
+    [string]$ServerName
+)
+
+Import-Module ADDSDeployment
+Install-ADDSForest -DomainName $DomainName -SafeModeAdministratorPassword $SecurePassword -InstallDns -DomainMode WinThreshold -ForestMode WinThreshold -Force
+"@
+
+$InstallForestPS1 | out-file -FilePath "$env:USERPROFILE\Downloads\InstallForest.ps1" -Force
+
+$PostConfigPS1 = @"
+    param(
+        [Parameter (Mandatory = $true)]
+        [string]$DefaultSite,
+        [string]$Network,
+        [string]$ServerName,
+        [string]$Domaine
+    )
+    Add-DnsServerPrimaryZone -DynamicUpdate Secure -NetworkId $Network -ReplicationScope Domain
+
+    New-ADReplicationSite -Name $DefaultSite -Description $DefaultSite
+    New-ADReplicationSubnet -Name $Network -Site $DefaultSite
+    # New-ADReplicationSiteLink -Name 'SL-Site1-Site2' -SitesIncluded Site1,Site2 -Cost 100 -ReplicationFrequencyInMinutes 15 -InterSiteTransportProtocol IP
+    Move-ADDirectoryServer -Identity $ServerName -Site $DefaultSite
+    Remove-ADReplicationSite -Identity "Default-First-Site-Name" -confirm:$false
+
+    $domain = $Domaine.split(".")
+    $Dom = $domain[0]
+    $Ext = $domain[1]
+
+    # Activer la corbeille AD
+    Enable-ADOptionalFeature -Identity 'Recycle Bin Feature' -Scope ForestOrConfigurationSet -Target $DomainName
+"@
+
+$PostConfigPS1 | out-file -FilePath "$env:USERPROFILE\Downloads\PostConfig.ps1" -Force
+
+$OUStructurePS1 = @"
+    param(
+        [Parameter (Mandatory = $true)]
+        [string]$Dom,
+        [string]$EXT
+    )
+    $Sites = ("RENNES","VANNES","BREST","SAINT-BRIEUC")
+    $Bases = ("Groups","Users","Workstations","Servers","Printers")
+    $Services = ("Production","Marketing","IT","Direction","Helpdesk")
+    $FirstOU = "Sites"
+
+    New-ADOrganizationalUnit -Name $FirstOU -Description $FirstOU -Path "DC=$Dom,DC=$EXT"
+
+
+    foreach ($S in $Sites)
+    {
+            New-ADOrganizationalUnit -Name $S -Description "$S" -Path "OU=$FirstOU,DC=$Dom,DC=$EXT"
+
+        foreach ($Base in $Bases)
+        {
+            New-ADOrganizationalUnit -Name $Base -Description "$Base" -Path "OU=$S,OU=$FirstOU,DC=$Dom,DC=$EXT"
+
+            foreach ($Serv in $Services)
+            {
+                New-ADOrganizationalUnit -Name $Serv -Description "$S $Serv" -Path "OU=Users,OU=$S,OU=$FirstOU,DC=$Dom,DC=$EXT"
+            }
+        }
+    }
+"@
+
+$OUStructurePS1 | out-file -FilePath "$env:USERPROFILE\Downloads\OUStructure.ps1" -Force
+
 # Run Workflow
-
-
 
 New-ServerSetup -JobName NewSrvSetup -Network $Reseau -IPAddr $IP -Mask $Masque -Gtw $Gateway -DNSServer $DNS -DNSSuffix $SuffixeDNS -DomainName $Domaine -DefaultSite $SiteDefault -SecurePwd $SecurePassword -ServerName $NomServeur
